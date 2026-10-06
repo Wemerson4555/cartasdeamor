@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pra você minha urubua</title>
+  <link rel="icon" type="image/png" href="icon.png" />
+  <style>
+    :root {
+      --pink-1: #fff0f5;
+      /* papel */
+      --pink-2: #ffd6e0;
+      /* sobre */
+      --pink-3: #ff9db8;
+      /* solapa */
+      --accent: #d63384;
+      /* texto */
+      --bg1: #ffeef6;
+      --bg2: #ffd4e6;
+    }
+
+    /* Reset ligero */
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color: var(--accent);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-align: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 120px;
+      /* espacio para firma/música */
+    }
+
+    h1 {
+      margin: 28px 12px 6px;
+      font-size: 2.4rem;
+      text-shadow: 0 2px 6px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Contenedor de sobres */
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 28px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Cada tarjeta(envelope) - AUMENTADO PARA IMAGENS MAIORES */
+    .envelope-wrap {
+      width: 340px;
+      height: 240px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .envelope {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+    }
+
+    /* cuerpo del sobre (lo que parece el frente) */
+    .body {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, var(--pink-2), #ffe7f0);
+      border-radius: 12px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+    }
+
+    /* solapa triangular */
+    .flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 62%;
+      background: linear-gradient(180deg, var(--pink-3), #ff7aa7);
+      clip-path: polygon(0 0, 50% 100%, 100% 0);
+      transform-origin: top center;
+      transform: rotateX(0deg);
+      transition: transform 0.7s cubic-bezier(.2, .9, .3, 1);
+      z-index: 3;
+    }
+
+    /* borde decorativo de solapa */
+    .flap::after {
+      content: "";
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      bottom: 8%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 2px;
+    }
+
+    /* interior/papel (se desliza hacia arriba) */
+    .paper {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: -110%;
+      /* escondido */
+      height: calc(100% - 14px);
+      background: var(--pink-1);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+      color: #9e1453;
+      overflow: auto;
+      transition: bottom 0.9s cubic-bezier(.2, .9, .3, 1), opacity 0.6s;
+      opacity: 0;
+      text-align: left;
+      line-height: 1.6;
+    }
+
+    /* Cuando el sobre está "open" */
+    .envelope-wrap.open .flap {
+      transform: rotateX(-180deg);
+      /* solapa se levanta */
+    }
+
+    .envelope-wrap.open .paper {
+      bottom: 8px;
+      /* se muestra */
+      opacity: 1;
+    }
+
+    /* Imagen dentro de la carta */
+    .paper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    /* Título pequeño en la parte frontal del sobre */
+    .front-label {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      z-index: 2;
+      font-size: 1.05rem;
+    }
+
+    /* Corazones flotantes */
+    .hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 18px;
+      opacity: 0.9;
+      animation: floaty linear infinite;
+      transform: translateY(0);
+    }
+
+    @keyframes floaty {
+      0% {
+        transform: translateY(110vh) scale(0.6);
+        opacity: 0;
+      }
+
+      15% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-10vh) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    /* Botón música */
+    .music-btn {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      background: linear-gradient(180deg, var(--pink-3), #ff5b8f);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 999px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .music-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Texto final y firma */
+    .footer-text {
+      margin: 34px auto 12px;
+      max-width: 900px;
+      padding: 12px 22px;
+      font-size: 1.15rem;
+      color: #b41359;
+    }
+
+    .signature {
+      font-weight: 700;
+      color: #8b0f46;
+      margin-bottom: 40px;
+    }
+
+    /* Bienvenida */
+    .welcome {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #ffb6c1 0%, #ff9bb7 50%, #ff7aa7 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 60;
+      color: white;
+      animation: welcomeHide 2s forwards;
+      animation-delay: 3.8s;
+    }
+
+    .welcome h2 {
+      font-size: 2.2rem;
+      margin: 0 6px;
+      text-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .welcome p {
+      opacity: 0.95;
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+
+    @keyframes welcomeHide {
+      to {
+        opacity: 0;
+        visibility: hidden;
+        transform: scale(1.02);
+      }
+    }
+
+    /* Scrollbar estilizada para el papel */
+    .paper::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .paper::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #ff9db8, #ffb6d0);
+      border-radius: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width:720px) {
+      .container {
+        gap: 18px;
+      }
+
+      .envelope-wrap {
+        width: 90vw;
+        height: 220px;
+      }
+
+      .paper {
+        padding: 12px;
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Pantalla de bienvenida -->
+  <div class="welcome" id="welcome">
+    <h2>💖 Para a urubua 💖</h2>
+    <p>Feliz 2 anos de amizades — Abre ai essas cartas diacho</p>
+  </div>
+
+  <h1>💞 Feliz 2 anos 💞</h1>
+
+  <!-- Contenedor de sobres -->
+  <div class="container" id="container">
+    <!-- --- Carta 1 --- -->
+    <div class="envelope-wrap" onclick="toggleEnvelope(this)">
+      <div class="envelope">
+        <div class="body">
+          <div class="front-label"></div>
+          <div class="flap"></div>
+          <div class="paper">
+            <img src="https://i.pinimg.com/736x/20/8a/3f/208a3fa6103f7e0a4c0ecbb7688f6328.jpg" 
+            alt="Rosas">
+            <p><strong>Mi amor, (Melhor represnetar por uma cadela)</strong> Olhar para a nossa amizade é ter a certeza
+              de que encontrei a minha dupla dinâmica. A gente se entende no olhar, compartilha as melhores piadas
+              internas e sabe exatamente o que o outro está pensando (até nas maiores loucuras). Ter alguém com quem eu
+              possa ser 100% eu mesmo, sem julgamentos, é um privilégio enorme.</p>
+            <p>Valeu por cada momento de parceria, por me ouvir falar das mesmas coisas mil vezes e por estar sempre lá
+              para o que der e vier. Amizades como a nossa são raras, do tipo que a gente sabe que vai carregar para a
+              vida inteira. Conta comigo para absolutamente tudo. Tamo junto sempre!❤️</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- Carta 2 --- -->
+    <div class="envelope-wrap" onclick="toggleEnvelope(this)">
+      <div class="envelope">
+        <div class="body">
+          <div class="front-label"></div>
+          <div class="flap"></div>
+          <div class="paper">
+            <img
+              src="https://i.pinimg.com/736x/37/ad/d7/37add7bd90c6c5c2346570b7fdde03da.jpg"
+              alt="Atardecer">
+            <p>Dayna, você deixa qualquer dia comum muito melhor só por estar por perto. porém tu vive ai nesse fim de
+              mundo e nem vem me ver, vou te dar é uns cascudos.</p>
+            <p>Porém é uma otima pessoa, fico feliz de ter te conhecido. TE AMOOOO</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- Carta 3 --- -->
+    <div class="envelope-wrap" onclick="toggleEnvelope(this)">
+      <div class="envelope">
+        <div class="body">
+          <div class="front-label"></div>
+          <div class="flap"></div>
+          <div class="paper">
+            <img src="https://i.pinimg.com/736x/37/1a/64/371a64ef75542fc84b5f33cc462ed4a7.jpg"
+            alt="Corazón">
+            <p>Desde que te conheci melhor, Dayna, adorei o seu jeito. Sua risada e a sua conversa deixam qualquer dia
+              bem mais legal. Só é uma bafuda vea, e nem toma banho. Sorte sua que eu não tenho preconceito</p>
+            <p>Espero que a gente possa está um dia dividindo muitos momentos, músicas e tardes boas juntos!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- Carta 4 --- -->
+    <div class="envelope-wrap" onclick="toggleEnvelope(this)">
+      <div class="envelope">
+        <div class="body">
+          <div class="front-label"></div>
+          <div class="flap"></div>
+          <div class="paper">
+            <img
+              src="https://i.pinimg.com/736x/32/57/ff/3257ff2c5f0d888282ec4b1cc99a045e.jpg"
+              alt="Globos">
+            <p>Estar ao seu lado me traz uma paz enorme, Dayna. Adoro rir com você, comemorar suas conquistas e ter sua
+              companhia. Você é muito especial para mim e me faz um bem danado. Não vou te humilhar aq, mais tu parece
+              uma rata... TE AMOOOOOOOOOOOOOOOOOOOOOOOO kkkkk</p>
+            <p>Muito obrigado por ser meu refugio as vezes, por ser minha risada favorita e por todos os momentos.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- Carta 5 --- -->
+    <div class="envelope-wrap" onclick="toggleEnvelope(this)">
+      <div class="envelope">
+        <div class="body">
+          <div class="front-label"></div>
+          <div class="flap"></div>
+          <div class="paper">
+            <img src="https://i.pinimg.com/736x/20/8a/3f/208a3fa6103f7e0a4c0ecbb7688f6328.jpg" 
+            alt="Manos">
+            <p>Esse último mês foi cheio de momentos incríveis. Das nossas conversas às pequenas brincadeiras, tudo com
+              você é leve e especial, Dayna. Desde que te conheci, meus dias ficaram muito melhores e me sinto super bem
+              do seu lado. Mais parece uma agoniada, não espera eu receber algo</p>
+            <p>Infelismente Meu amor Por tu cresce, fazer oq kkkk (Zuera viu, você é muito importante para mim)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- --- Carta 6 --- -->
+    <div class="envelope-wrap" onclick="toggleEnvelope(this)">
+      <div class="envelope">
+        <div class="body">
+          <div class="front-label"></div>
+          <div class="flap"></div>
+          <div class="paper">
+            <img src="https://i.pinimg.com/736x/9a/09/57/9a095757820001928ea002e76b96b6d0.jpg" 
+            alt="Luz">
+            <p>Gosto demais de tudo em você, Dayna, e esse é só o começo do nosso caminho juntos. Você me inspira a ser
+              melhor e me dá um ânimo incrível no dia a dia. Adoro o seu jeito e a paz que a sua companhia me traz. Mais
+              eu quero saber uma coisa, já lavou uma louça?</p>
+            <p>Feliz 2 anos de amizade (nem lembro a data que nois se conheceu kkk)! Obrigado por ser essa pessoa tão
+              incrível.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div> <!-- fin container -->
+
+  <!-- Texto final y firma -->
+  <div class="footer-text">
+    Perdi meu tempo aqui mais Obrigado por me fazer tão feliz. Você é um sonho realizado para mim, Layla. Te amo demais!
+    Você é uma pessoa incrível, única, linda e muito inteligente. Você é a minha prioridade e o grande amor da minha
+    vida. (Brincadeira viu, doida vea)
+    <div class="signature">Com todo o meu amor — Wemerson, todinho seu e das outras mulheres, de preferência loiras
+      kkkkkk (Zueira). Posso até te dizer isso todos os dias, mas quero que saiba que esse sentimento só cresce a cada
+      segundo. Te amo demais! imundice</div>
+  </div>
+
+  <!-- Corazones flotantes -->
+  <div class="hearts" id="hearts"></div>
+  <script>
+    // Abre/cierra envelope (flap + papel)
+    function toggleEnvelope(el) {
+      el.classList.toggle('open');
+    }
+
+    // Corazones flotantes dinámicos
+    const heartsContainer = document.getElementById('hearts');
+    const heartEmojis = ['💖', '💕', '🌸', '💗', '💞'];
+    function spawnHeart() {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+      const size = 12 + Math.random() * 28;
+      h.style.fontSize = size + 'px';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.animationDuration = (5 + Math.random() * 6) + 's';
+      heartsContainer.appendChild(h);
+      setTimeout(() => h.remove(), 12000);
+    }
+    setInterval(spawnHeart, 500);
+
+    // Ocultar welcome después de animación
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const w = document.getElementById('welcome');
+        if (w) w.style.display = 'none';
+      }, 5200);
+    });
+  </script>
+</body>
+
+</html>
